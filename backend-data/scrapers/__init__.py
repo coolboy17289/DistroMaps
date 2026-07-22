@@ -1,1 +1,0 @@
-# DistroMap Scrapy scrapers
