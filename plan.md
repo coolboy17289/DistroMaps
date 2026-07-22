@@ -115,6 +115,76 @@ frontend/server/dev-api.ts     # Vite dev middleware for API
 
 ---
 
+## Add Distro Button — Implementation Plan
+
+### Goal
+
+Make the **"Add distro"** button in the top bar fully functional end-to-end, with a smooth UX on desktop and mobile. The button already opens a modal and the API already accepts suggestions; this plan covers the remaining polish, verification, and known edge cases.
+
+### Current Status
+
+- **Button exists** in `frontend/src/App.tsx` and toggles `addOpen` state.
+- **Modal exists** in `frontend/src/components/AddDistroForm.tsx` and validates the topic against Wikipedia.
+- **API exists** at `POST /api/suggest` in `shared/api-handlers.ts`.
+- **Known gaps:**
+  - No handling for a failed or slow Wikipedia API.
+  - Modal does not close when pressing `Esc` or clicking the backdrop.
+  - On mobile (`max-width: 480px`) the Add button is hidden by CSS.
+  - Duplicate detection uses `fetchSearch`, which can be brittle if the name has punctuation/capitalization differences.
+  - After a successful submission the modal closes but there is no persistent feedback to the user.
+
+### Implementation Steps
+
+1. **Harden the suggestion form**
+   - Add a clear `fetch` error state for Wikipedia being unreachable.
+   - Debounce the Wikipedia lookup so rapid typing doesn't spam the API.
+   - Trim and normalize the topic input before slugifying.
+   - Normalize duplicate detection by comparing slugified IDs in addition to exact names.
+
+2. **Improve modal UX**
+   - Close the modal on `Esc` via a window `keydown` listener.
+   - Close the modal when clicking the `.add-form-backdrop` (but not the form card itself).
+   - Trap focus inside the modal while it is open.
+   - Reset form state completely when reopened.
+
+3. **Mobile visibility**
+   - Remove or adjust the rule that hides `.add-button` on small screens.
+   - Ensure the modal fits within mobile viewports (`max-width: 100vw`, padding, and scrollable content).
+
+4. **Add persistent feedback after submission**
+   - Show a non-blocking toast or banner in `App.tsx` after `onSubmitted` fires, confirming the suggestion ID.
+   - Keep the success state for a few seconds so users can see it.
+
+5. **Backend resilience**
+   - Add CORS and a small request timeout to the Wikipedia lookup in `shared/api-handlers.ts`.
+   - Validate the payload shape (`topic` must be a non-empty string; `rationale` and `submitter` are optional strings).
+   - Return a clear 422 error if Wikipedia validation fails.
+
+6. **Verify end-to-end**
+   - Run `npm run typecheck` after all changes.
+   - Run `npm run build` to ensure the production bundle is valid.
+   - Manually smoke-test the dev server: open the modal, submit a valid distro, submit an invalid topic, press `Esc`, click the backdrop, test on a narrow viewport.
+
+### Files to Touch
+
+- `frontend/src/components/AddDistroForm.tsx`
+- `frontend/src/App.tsx`
+- `frontend/src/styles/global.css`
+- `shared/api-handlers.ts`
+- `shared/types.ts` (if payload validation types need tightening)
+
+### Acceptance Criteria
+
+- [ ] Clicking "Add distro" opens the modal from both desktop and mobile widths.
+- [ ] Typing a valid Wikipedia topic shows a preview within ~500 ms of stopping typing.
+- [ ] Typing an invalid topic shows a clear error instead of a broken preview.
+- [ ] Submitting a suggestion calls `POST /api/suggest` and shows a success confirmation with the returned ID.
+- [ ] Pressing `Esc` or clicking outside the modal closes it.
+- [ ] The modal resets when reopened.
+- [ ] `npm run typecheck` and `npm run build` pass with no new errors.
+
+---
+
 ## Commands
 
 | Command | What it does |
