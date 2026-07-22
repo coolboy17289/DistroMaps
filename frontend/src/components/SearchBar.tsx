@@ -8,10 +8,11 @@ interface SearchBarProps {
   onChange: (v: string) => void;
   results: Distro[];
   onPick: (id: string) => void;
+  onHoverResult?: (id: string | null) => void;
   focusSignal?: number;
 }
 
-export function SearchBar({ value, onChange, results, onPick, focusSignal }: SearchBarProps) {
+export function SearchBar({ value, onChange, results, onPick, onHoverResult, focusSignal }: SearchBarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [remoteResults, setRemoteResults] = useState<Distro[] | null>(null);
@@ -78,7 +79,13 @@ export function SearchBar({ value, onChange, results, onPick, focusSignal }: Sea
       {open && suggestions.length > 0 && (
         <div className="search-dropdown" role="listbox">
           {suggestions.map((s) => (
-            <button key={s.id} className="search-result" onClick={() => onPick(s.id)}>
+            <button
+              key={s.id}
+              className="search-result"
+              onClick={() => onPick(s.id)}
+              onMouseEnter={() => onHoverResult?.(s.id)}
+              onMouseLeave={() => onHoverResult?.(null)}
+            >
               <span className="search-result-name">{s.name}</span>
               <span className="search-result-meta">
                 {s.packageManager && <span>pkg: {s.packageManager}</span>}
