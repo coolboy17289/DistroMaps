@@ -136,115 +136,84 @@ export function App() {
     onQuestion: () => setKbdOpen((v) => !v),
   });
 
-  if (error) {
-    return (
-      <div className="fatal">
-        <h1>Couldn't load the dataset.</h1>
-        <p>{error}</p>
-        <button onClick={reload}>Retry</button>
-      </div>
-    );
-  }
-
-  if (!data) {
-    return (
-      <div className="loading-screen">
-        <div className="loading-skeleton">
-          <div className="loading-skeleton-brand">
-            <div className="skeleton-circle" />
-            <div className="skeleton-lines">
-              <div className="skeleton-line skeleton-line--short" />
-              <div className="skeleton-line skeleton-line--long" />
-            </div>
-          </div>
-          <div className="loading-skeleton-graph">
-            <div className="skeleton-ring skeleton-ring--outer" />
-            <div className="skeleton-ring skeleton-ring--mid" />
-            <div className="skeleton-ring skeleton-ring--inner" />
-            <div className="skeleton-center-dot" />
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div
-                key={i}
-                className="skeleton-node"
-                style={{
-                  transform: `rotate(${i * 45}deg) translateY(-80px)`,
-                }}
-              />
-            ))}
-          </div>
-          <p className="loading-skeleton-text">Loading the Linux knowledge graph…</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <ErrorBoundary>
-    <div className={`app ${legendOpen ? 'legend-open' : 'legend-closed'}`}>
-      <Brand data={data} />
+      {error ? (
+        <div className="fatal">
+          <h1>Couldn't load the dataset.</h1>
+          <p>{error}</p>
+          <button onClick={reload}>Retry</button>
+        </div>
+      ) : !data ? (
+        <LoadingSkeleton />
+      ) : (
+        <div className={`app ${legendOpen ? 'legend-open' : 'legend-closed'}`}>
+          <Brand data={data} />
 
-      <div className="top-bar">          <SearchBar
-          value={searchQuery}
-          onChange={setSearchQuery}
-          results={filteredResults}
-          onPick={(id) => setSelectedId(id)}
-          onHoverResult={setSearchHoveredId}
-          focusSignal={requestSearchFocus}
-        />
-        <button className="add-button" onClick={() => setAddOpen(true)}>
-          <span className="add-button-plus">+</span>
-          <span>Add distro</span>
-        </button>
-      </div>
+          <div className="top-bar">
+            <SearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              results={filteredResults}
+              onPick={(id) => setSelectedId(id)}
+              onHoverResult={setSearchHoveredId}
+              focusSignal={requestSearchFocus}
+            />
+            <button className="add-button" onClick={() => setAddOpen(true)}>
+              <span className="add-button-plus">+</span>
+              <span>Add distro</span>
+            </button>
+          </div>
 
-      <Legend
-        families={data.families}
-        distros={data.distros}
-        filterFamilyId={filterFamilyId}
-        setFilterFamilyId={setFilterFamilyId}
-        showDisco={showDisco}
-        setShowDisco={setShowDisco}
-        onHoverFamily={setHoveredFamilyId}
-        collapsed={!legendOpen}
-        onToggleCollapse={() => setLegendOpen((v) => !v)}
-      />
+          <Legend
+            families={data.families}
+            distros={data.distros}
+            filterFamilyId={filterFamilyId}
+            setFilterFamilyId={setFilterFamilyId}
+            showDisco={showDisco}
+            setShowDisco={setShowDisco}
+            onHoverFamily={setHoveredFamilyId}
+            collapsed={!legendOpen}
+            onToggleCollapse={() => setLegendOpen((v) => !v)}
+          />
 
-      <Graph
-        data={data}
-        selectedId={selectedId}
-        filterFamilyId={filterFamilyId}
-        highlightIds={highlightIds}
-        hoveredFamilyId={hoveredFamilyId}
-        searchHighlightIds={searchHighlightIds}
-        onSelect={setSelectedId}
-        onHover={setHoveredId}
-      />
+          <Graph
+            data={data}
+            selectedId={selectedId}
+            filterFamilyId={filterFamilyId}
+            highlightIds={highlightIds}
+            hoveredFamilyId={hoveredFamilyId}
+            searchHighlightIds={searchHighlightIds}
+            onSelect={setSelectedId}
+            onHover={setHoveredId}
+          />
 
-      <KeyboardHints show={kbdOpen} onToggle={() => setKbdOpen((v) => !v)} />
+          <KeyboardHints show={kbdOpen} onToggle={() => setKbdOpen((v) => !v)} />
 
-      <ThemeToggle theme={theme} onToggle={toggleTheme} />
+          <ThemeToggle theme={theme} onToggle={toggleTheme} />
 
-      <div className="graph-status">
-        {hoveredId ? (
-          <>{data.distros.find((d) => d.id === hoveredId)?.name ?? hoveredId}</>
-        ) : (
-          <>{data.meta.totalDistros} distros · {data.meta.families - 1} families</>
-        )}
-      </div>
+          <div className="graph-status">
+            {hoveredId ? (
+              <>{data.distros.find((d) => d.id === hoveredId)?.name ?? hoveredId}</>
+            ) : (
+              <>{data.meta.totalDistros} distros · {data.meta.families - 1} families</>
+            )}
+          </div>
 
-      {selectedDistro && (
-        <SidePanel
-          distro={selectedDistro}
-          family={selectedFamily}
-          parent={parentDistro}
-          children={childrenDistros}
-          onClose={() => setSelectedId(null)}
-          onSelect={(id) => setSelectedId(id)}
-        />
+          {selectedDistro && (
+            <SidePanel
+              distro={selectedDistro}
+              family={selectedFamily}
+              parent={parentDistro}
+              children={childrenDistros}
+              onClose={() => setSelectedId(null)}
+              onSelect={(id) => setSelectedId(id)}
+            />
+          )}
+
+          <AddDistroForm open={addOpen} onClose={() => setAddOpen(false)} onSubmitted={() => setAddOpen(false)} />
+        </div>
       )}
-
-      <AddDistroForm open={addOpen} onClose={() => setAddOpen(false)} onSubmitted={() => setAddOpen(false)} />
-    </div>
     </ErrorBoundary>
   );
 }

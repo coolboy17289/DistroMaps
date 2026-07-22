@@ -1,144 +1,99 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import type { GraphData, Distro, Family } from '@shared/types';
 
-// Cache for data
-let distrosCache: any[] | null = null;
-let statsCache: any = null;
-let familiesCache: any[] | null = null;
+let cache: GraphData | null = null;
 
-// Load and cache data
-function loadDistros() {
-  if (!distrosCache) {
-    const data = readFileSync(resolve('./public/data.json'), 'utf-8');
-    distrosCache = JSON.parse(data);
+/** Load and cache the built dataset (GraphData shape: families/distros/edges/meta). */
+function load(): GraphData {
+  if (!cache) {
+    const raw = readFileSync(resolve('./public/data.json'), 'utf-8');
+    cache = JSON.parse(raw) as GraphData;
   }
-  return distrosCache;
+  return cache!;
 }
 
-function loadStats() {
-  if (!statsCache) {
-    const distros = loadDistros();
-    const total = distros.length;
-    const active = distros.filter((d: any) => d.status.toLowerCase() === 'active').length;
-    const discontinued = total - active;
-    const families = [...new Set(distros.map((d: any) => d.family))];
-    
-    statsCache = {
-      totalDistros: total,
-      active,
-      discontinued,
-      families: families.length,
-    };
-  }
-  return statsCache;
+function loadDistros(): Distro[] {
+  return load().distros;
 }
 
-function loadFamilies() {
-  if (!familiesCache) {
-    const distros = loadDistros();
-    const familyMap = new Map<string, { id: string; name: string; count: number }>();
-    
-    distros.forEach((d: any) => {
-      const family = d.family;
-      if (!familyMap.has(family)) {
-        familyMap.set(family, { id: family.toLowerCase(), name: family, count: 0 });
-      }
-      const fam = familyMap.get(family)!;
-      fam.count++;
-    });
-    
-    familiesCache = Array.from(familyMap.values()).map(f => ({
-      id: f.id,
-      name: f.name,
-      color: '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')
-    }));
-  }
-  return familiesCache;
+function loadFamilies(): Family[] {
+  return load().families;
 }
 
-// API handler
+/** Express-style handler mounted by the Vite `apiServerPlugin`. */
 export default async (req: any, res: any) => {
   const url = new URL(req.url || '', `http://${req.headers.host}`);
   const path = url.pathname;
-  
-  // Set CORS headers
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  
   if (req.method === 'OPTIONS') {
     res.statusCode = 204;
     res.end();
     return;
   }
-  
+
+  const json = (code: number, body: unknown) => {
+    res.statusCode = code;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(body));
+  };
+
   try {
-    if (path === '/api/health') {
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ status: 'ok', timestamp: Date.now() }));
-      return;
-    }
-    
+    if (path === '/api/health') return json(200, { status: 'ok' });
+
     if (path === '/api/stats') {
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify(loadStats()));
-      return;
+      const g = load();
+      return json(200, g.meta);
     }
-    
+
     if (path === '/api/families') {
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ families: loadFamilies() }));
-      return;
-    }
-    
-    if (path.startsWith('/api/search')) {
-      const query = url.searchParams.get('q') || '';
-      const limit = Math.min(parseInt(url.searchParams.get('limit') || '10'), 50);
       const distros = loadDistros();
-      
-      let results = distros;
-      if (query) {
-        const lowerQuery = query.toLowerCase();
-        results = distros.filter((d: any) => 
-          d.name.toLowerCase().includes(lowerQuery) || 
-          (d.description && d.description.toLowerCase().includes(lowerQuery))
+      const counts = new Map<string, number>();
+      for (const d of distros) counts.set(d.family, (counts.get(d.family) ?? 0) + 1);
+      const families = loadFamilies().map((f) => ({ id: f.id, name: f.name, color: f.color, count: counts.get(f.id) ?? 0 }));
+      return json(200, { families });
+    }
+
+    if (path.startsWith('/api/search')) {
+      const q = (url.searchParams.get('q') ?? '').toLowerCase();
+      const limit = Math.min(parseInt(url.searchParams.get('limit') ?? '20', 10) || 20, 50);
+      let results = loadDistros();
+      if (q) {
+        results = results.filter((d) =>
+          d.name.toLowerCase().includes(q) ||
+          (d.description ?? '').toLowerCase().includes(q) ||
+          d.family.includes(q),
         );
       }
-      
-      results = results.slice(0, limit);
-      
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ results, total: results.length }));
-      return;
+      return json(200, { ids: results.slice(0, limit).map((d) => d.id), total: results.length });
     }
-    
-    if (path === '/api/data') {
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify(loadDistros()));
-      return;
-    }
-    
-    // For other endpoints, return empty array or basic response for now
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json');
-    
+
+    if (path === '/api/data') return json(200, load());
+
     if (path === '/api/suggest') {
-      res.end(JSON.stringify({ ok: true, id: 'temp-' + Date.now() }));
-    } else if (path.startsWith('/api/path') || path.startsWith('/api/compare')) {
-      res.end(JSON.stringify([]));
-    } else {
-      res.end(JSON.stringify({}));
+      // Accept a topic + rationale, echo back a queued id. (No persistence in dev.)
+      let topic = '';
+      try { topic = (JSON.parse(await readBody(req)) ?? {}).topic ?? ''; } catch { /* empty body is fine */ }
+      const id = topic ? topic.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : 'suggestion';
+      return json(200, { ok: true, id, validated: { title: topic || 'Suggestion', url: `https://en.wikipedia.org/wiki/${encodeURIComponent(topic.replace(/ /g, '_'))}` } });
     }
-    
+
+    if (path.startsWith('/api/path') || path.startsWith('/api/compare')) return json(200, []);
+
+    return json(404, { error: 'not_found' });
   } catch (error) {
     console.error('API error:', error);
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'internal_error', message: (error as Error).message }));
+    return json(500, { error: 'internal_error', message: (error as Error).message });
   }
 };
+
+function readBody(req: any): Promise<string> {
+  return new Promise((resolveBody) => {
+    let data = '';
+    req.on('data', (chunk: Buffer) => (data += chunk.toString()));
+    req.on('end', () => resolveBody(data));
+  });
+}

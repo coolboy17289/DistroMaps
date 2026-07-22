@@ -7,3 +7,4 @@ dist
 data/cache
 frontend/public/data.json
 frontend/api/data.json
+.claude/

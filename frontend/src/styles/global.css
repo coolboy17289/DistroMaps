@@ -1368,7 +1368,15 @@ kbd {
   }
 
   .sp-name { font-size: 22px; }
-  .side-panel { width: 100%; padding: 16px; }
+  .side-panel {
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    padding: 16px;
+    border-left: none;
+    border-radius: 0;
+  }
   .kbd-hints-panel { right: -6px; width: 220px; }
   .graph-wrap { inset: 52px 0 0; }
   .graph-hint { display: none; }
