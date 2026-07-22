@@ -1,0 +1,15 @@
+{
+  "generatedAt": "2026-07-22T03:03:58.496Z",
+  "metadata": {
+    "totalKnownDistros": 453,
+    "totalKnownFamilies": 92,
+    "candidatesFound": 0,
+    "highConfidence": 0,
+    "mediumConfidence": 0,
+    "lowConfidence": 0,
+    "minScore": 0.75
+  },
+  "highConfidence": [],
+  "mediumConfidence": [],
+  "lowConfidence": []
+}
