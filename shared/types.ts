@@ -24,6 +24,20 @@ export interface SourceDistro {
   description?: string;
   statusNote?: string;
   discontinuedAt?: number;
+  /** Upstream/base distro lineage (e.g. "Debian", "Arch", "Independent"). */
+  baseDistro?: string;
+  /** ISO 8601 timestamp of the last insert or update. */
+  lastUpdated?: string;
+  /** Latest known version string (e.g. "24.04", "41"). */
+  version?: string;
+  /** Architecture targets supported by this distro. */
+  architecture?: DistroArch[];
+  /** Desktop environment(s) offered. */
+  desktopEnvironments?: DistroDesktop[];
+  /** Direct ISO download URL. */
+  downloadUrl?: string;
+  /** ISO checksum (SHA256, SHA512, or MD5). */
+  isoChecksum?: string;
 }
 
 export interface SourceFamily {
@@ -291,6 +305,7 @@ export interface CrawlReport {
   candidatesAccepted: number;
   newFamilies: number;
   newDistros: number;
+  updatedDistros?: number;
   duplicatesSkipped: number;
   errors: Array<{ source: string; message: string }>;
   /** Updated trust scores after this cycle. */

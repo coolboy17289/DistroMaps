@@ -24,7 +24,11 @@
     "typecheck": "tsc --noEmit",
     "dev:vue": "npm run build:data && npm --prefix frontend-vue run dev",
     "build:vue": "npm run build:data && npm --prefix frontend-vue run build",
-    "preview:vue": "npm --prefix frontend-vue run preview"
+    "preview:vue": "npm --prefix frontend-vue run preview",
+    "dev:next": "npm run build:data && npm --prefix app run dev",
+    "build:next": "npm run build:data && npm --prefix app run build",
+    "start:next": "npm --prefix app run start",
+    "preview:next": "npm --prefix app run start"
 
   },
   "dependencies": {
