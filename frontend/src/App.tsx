@@ -21,6 +21,7 @@ export function App() {
   const [hoveredFamilyId, setHoveredFamilyId] = useState<string | null>(null);
   const [kbdOpen, setKbdOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
+  const [submissionNotice, setSubmissionNotice] = useState<{ id: string; title: string } | null>(null);
   const [legendOpen, setLegendOpen] = useState(true);
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     const stored = localStorage.getItem('distromap-theme');
@@ -136,6 +137,12 @@ export function App() {
     onQuestion: () => setKbdOpen((v) => !v),
   });
 
+  useEffect(() => {
+    if (!submissionNotice) return;
+    const timer = setTimeout(() => setSubmissionNotice(null), 5000);
+    return () => clearTimeout(timer);
+  }, [submissionNotice]);
+
   return (
     <ErrorBoundary>
       {error ? (
@@ -211,7 +218,21 @@ export function App() {
             />
           )}
 
-          <AddDistroForm open={addOpen} onClose={() => setAddOpen(false)} onSubmitted={() => setAddOpen(false)} />
+          {submissionNotice && (
+            <div className="toast toast--success" role="status" aria-live="polite">
+              <span>Suggestion <strong>{submissionNotice.title}</strong> queued (id: <code>{submissionNotice.id}</code>).</span>
+              <button className="toast-close" onClick={() => setSubmissionNotice(null)} aria-label="Dismiss suggestion notice">×</button>
+            </div>
+          )}
+
+          <AddDistroForm
+            open={addOpen}
+            onClose={() => setAddOpen(false)}
+            onSubmitted={({ id, title }) => {
+              setSubmissionNotice({ id, title });
+              setAddOpen(false);
+            }}
+          />
         </div>
       )}
     </ErrorBoundary>

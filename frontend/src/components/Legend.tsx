@@ -131,7 +131,7 @@ export function Legend({
                   }}
                   onMouseEnter={() => onHoverFamily?.(f.id)}
                   onMouseLeave={() => onHoverFamily?.(null)}
-                  style={{ ['--pill-color' as any]: f.color }}
+                  style={{ '--pill-color': f.color } as React.CSSProperties}
                   title={`${f.name} — ${c.active} active, ${c.total - c.active} discontinued`}
                 >
                   <span className="legend-sidebar-dot" />

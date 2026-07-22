@@ -295,10 +295,19 @@ export function computeStats(): StatsResponse {
 /*                              Wikipedia lookup                               */
 /* -------------------------------------------------------------------------- */
 
+const WIKI_LOOKUP_TIMEOUT_MS = 6000;
+
+function timeoutSignal(ms: number): AbortSignal {
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), ms);
+  return controller.signal;
+}
+
 export async function lookupWikipedia(topic: string): Promise<SuggestResponse['validated'] | null> {
   const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic)}`;
   try {
     const res = await fetch(url, {
+      signal: timeoutSignal(WIKI_LOOKUP_TIMEOUT_MS),
       headers: { 'Api-User-Agent': 'DistroMap/0.1 (https://distromap.example)' },
     });
     if (!res.ok) return null;
@@ -443,9 +452,16 @@ export function buildRoutes(): Route[] {
     }),
     route('POST', /^\/api\/suggest\/?$/, async (req, res) => {
       const body = await readJsonBody<SuggestPayload>(req);
-      if (!body.topic) return send(res, 400, { error: 'missing_topic' });
-      const validated = await lookupWikipedia(body.topic);
-      if (!validated) return send(res, 422, { error: 'wiki_lookup_failed', topic: body.topic });
+      if (!body || typeof body !== 'object') return send(res, 400, { error: 'invalid_body' });
+      if (typeof body.topic !== 'string' || !body.topic.trim()) return send(res, 400, { error: 'missing_topic' });
+      if (body.rationale !== undefined && typeof body.rationale !== 'string') {
+        return send(res, 400, { error: 'invalid_rationale' });
+      }
+      if (body.submitter !== undefined && typeof body.submitter !== 'string') {
+        return send(res, 400, { error: 'invalid_submitter' });
+      }
+      const validated = await lookupWikipedia(body.topic.trim());
+      if (!validated) return send(res, 422, { error: 'wiki_lookup_failed', topic: body.topic.trim() });
       const response: SuggestResponse = {
         ok: true,
         id: Math.random().toString(36).slice(2, 10),

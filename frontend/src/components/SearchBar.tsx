@@ -59,7 +59,7 @@ export function SearchBar({ value, onChange, results, onPick, onHoverResult, foc
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 120)}
-          placeholder='Search 280+ distros or "family: debian" / "init: openrc" / "country: Germany"'
+          placeholder='Search distros or "family: debian" / "init: openrc" / "country: Germany"'
           className="search-input"
           aria-label="Search distros"
         />

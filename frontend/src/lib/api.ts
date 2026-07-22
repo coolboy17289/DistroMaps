@@ -1,4 +1,4 @@
-import type { GraphData, PathResult, StatsResponse } from '@shared/types';
+import type { Distro, GraphData, PathResult, StatsResponse } from '@shared/types';
 
 export async function fetchData(): Promise<GraphData> {
   const res = await fetch('/data.json');
@@ -27,7 +27,7 @@ export async function fetchFamilies(): Promise<{ id: string; name: string; color
   }
 }
 
-export async function fetchSearch(q: string): Promise<import('@shared/types').Distro[]> {
+export async function fetchSearch(q: string): Promise<Distro[]> {
   try {
     const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&limit=40`);
     if (!res.ok) return [];
