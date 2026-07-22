@@ -123,11 +123,6 @@ interface CategoryPage {
   pageid: number;
 }
 
-interface CrawlResult {
-  pages: CategoryPage[];
-  categories: string[];
-}
-
 /* ========================================================================= */
 /*  Pattern Learning                                                         */
 /* ========================================================================= */
@@ -511,7 +506,6 @@ async function crawlWikipedia(
   specificCategory?: string,
 ): Promise<DiscoveryCandidate[]> {
   const categories = specificCategory ? [specificCategory] : LINUX_CATEGORIES;
-  const seen = new Set<string>();
   const candidates: Map<string, DiscoveryCandidate> = new Map();
 
   console.log(`\n📡 Crawling ${categories.length} Wikipedia categories (with subcategories)...`);
@@ -582,7 +576,7 @@ async function crawlWikipedia(
     }
   }
 
-  process.stdout.write(`    ${processed}/${allPages} done.\n`);
+  process.stdout.write(`    ${processed}/${allPages.size} done.\n`);
   return [...candidates.values()].sort((a, b) => b.confidence - a.confidence);
 }
 
@@ -781,7 +775,6 @@ function scoreCandidate(
 
   // ---- Determine best family ----
   let bestFamilyId: string | null = null;
-  let bestFamilyName: string | null = null;
   let bestFamilyScore = 0;
 
   // Check name-based family suggestions
@@ -827,7 +820,7 @@ function scoreCandidate(
   }
 
   // ---- Guess metadata ----
-  const guessedMetadata = guessMetadata(bestFamilyId, name, description, toks, descTokens, patterns);
+  const guessedMetadata = guessMetadata(bestFamilyId, description, patterns);
 
   // ---- Build signal list ----
   const signals: string[] = [];
@@ -872,13 +865,9 @@ function scoreCandidate(
 
 function guessMetadata(
   familyId: string | null,
-  name: string,
   description: string,
-  toks: string[],
-  descTokens: string[],
   patterns: LearnedPatterns,
 ): DiscoveryCandidate['guessedMetadata'] {
-  const nl = name.toLowerCase();
   const dl = description.toLowerCase();
   const meta: DiscoveryCandidate['guessedMetadata'] = {
     country: null,

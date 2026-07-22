@@ -4,6 +4,9 @@
   "version": "0.1.0",
   "description": "A visual knowledge graph of the Linux ecosystem — 380+ distributions across 47 families, all tracing back to the Linux kernel.",
   "type": "module",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "npm run build:data && vite --config vite.config.ts",
     "build": "npm run build:data && vite build --config vite.config.ts",
