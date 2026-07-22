@@ -13,17 +13,8 @@ export function mountApiRoutes(app: Connect.Server): void {
     if (!url.startsWith('/api/')) return next();
 
     for (const r of routes) {
-      if (r.method !== req.method) continue;
-      const m = r.pattern.exec(req.url ?? '');
-      if (!m) continue;
-      try {
-        await r.handle(req, res, {}, {});
-      } catch (err) {
-        res.statusCode = 500;
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
-        res.end(JSON.stringify({ error: 'internal_error', message: (err as Error).message }));
-      }
-      return;
+      await r.handle(req, res, {}, {});
+      if (res.headersSent) return;
     }
 
     res.statusCode = 404;

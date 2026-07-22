@@ -718,14 +718,6 @@
       "rootDistroId": "nobara"
     },
     {
-      "id": "steamos-family",
-      "name": "SteamOS",
-      "color": "#1a9fff",
-      "description": "Valve's gaming-focused Linux distribution.",
-      "founded": 2013,
-      "rootDistroId": "steamos"
-    },
-    {
       "id": "android-x86",
       "name": "Android-x86",
       "color": "#3ddc84",
@@ -740,14 +732,6 @@
       "description": "Amazon's Android-based operating system.",
       "founded": 2011,
       "rootDistroId": "fireos"
-    },
-    {
-      "id": "kaios-family",
-      "name": "KaiOS",
-      "color": "#6f2da8",
-      "description": "Linux-based mobile OS for feature phones.",
-      "founded": 2017,
-      "rootDistroId": "kaios"
     },
     {
       "id": "openembedded",
@@ -6736,23 +6720,8 @@
       "description": "Community-driven Mer-based mobile OS."
     },
     {
-      "id": "webos",
-      "familyId": "debian",
-      "name": "webOS",
-      "status": "active",
-      "founded": 2009,
-      "country": "United States",
-      "packageManager": "ipkg",
-      "initSystem": "sysvinit",
-      "releaseModel": "rolling",
-      "license": "Proprietary",
-      "website": "https://webosose.org",
-      "wikipedia": "https://en.wikipedia.org/wiki/WebOS",
-      "description": "Linux-based OS for smart TVs by LG."
-    },
-    {
       "id": "firefoxos",
-      "familyId": "debian",
+      "familyId": "lineageos",
       "name": "Firefox OS",
       "status": "discontinued",
       "founded": 2013,
@@ -6795,53 +6764,6 @@
       "license": "Free",
       "website": "https://nobaraproject.org",
       "description": "Fedora-based gaming distro with custom fixes."
-    },
-    {
-      "id": "openbsd",
-      "parent": "debian",
-      "familyId": "debian",
-      "name": "OpenBSD",
-      "status": "active",
-      "founded": 1995,
-      "country": "Canada",
-      "packageManager": "pkg",
-      "initSystem": "BSD-style",
-      "releaseModel": "fixed",
-      "license": "Free",
-      "website": "https://openbsd.org",
-      "wikipedia": "https://en.wikipedia.org/wiki/OpenBSD",
-      "description": "Security-focused BSD descendant (not strictly Linux, but influential)."
-    },
-    {
-      "id": "freebsd",
-      "parent": "debian",
-      "familyId": "debian",
-      "name": "FreeBSD",
-      "status": "active",
-      "founded": 1993,
-      "country": "United States",
-      "packageManager": "pkg",
-      "initSystem": "BSD-style",
-      "releaseModel": "fixed",
-      "license": "Free",
-      "website": "https://freebsd.org",
-      "wikipedia": "https://en.wikipedia.org/wiki/FreeBSD",
-      "description": "Advanced BSD operating system (not Linux, but included for context)."
-    },
-    {
-      "id": "ghostbsd",
-      "parent": "debian",
-      "familyId": "debian",
-      "name": "GhostBSD",
-      "status": "active",
-      "founded": 2009,
-      "country": "Greece",
-      "packageManager": "pkg",
-      "initSystem": "BSD-style",
-      "releaseModel": "rolling",
-      "license": "Free",
-      "website": "https://ghostbsd.org",
-      "description": "Desktop-oriented FreeBSD derivative with MATE."
     },
     {
       "id": "almalinux-kitten",

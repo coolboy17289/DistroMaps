@@ -370,7 +370,17 @@ function drawMindMap(
   hoveredFamilyId?: string | null,
   searchHighlightIds?: Set<string>,
 ) {
-  ctx.clearRect(0, 0, W, H);
+  // Theme-aware colors from CSS variables
+  const bgStyle = getComputedStyle(document.documentElement);
+  const isLight = document.documentElement.classList.contains('light-theme');
+  const bgColor = bgStyle.getPropertyValue('--bg').trim() || '#0f0f0f';
+  const textColor = bgStyle.getPropertyValue('--text').trim() || '#e8e8e8';
+  const labelBg = isLight ? 'rgba(245, 245, 240, 0.92)' : 'rgba(15, 15, 15, 0.85)';
+  const kernelInner = isLight ? '#f5f5f0' : '#0f0f0f';
+  const glowColor = isLight ? '0,0,0' : '255,255,255';
+
+  ctx.fillStyle = bgColor;
+  ctx.fillRect(0, 0, W, H);
 
   ctx.save();
   ctx.translate(transform.x, transform.y);
@@ -423,8 +433,8 @@ function drawMindMap(
     if (isHovered || isSelected || isLegendHovered || isSearchHighlighted) {
       const glowR = radius * 2.5;
       const g = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, glowR);
-      g.addColorStop(0, isSelected ? 'rgba(255,255,255,0.25)' : isSearchHighlighted ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.12)');
-      g.addColorStop(1, 'rgba(255,255,255,0)');
+      g.addColorStop(0, isSelected ? `rgba(${glowColor},0.25)` : isSearchHighlighted ? `rgba(${glowColor},0.15)` : `rgba(${glowColor},0.12)`);
+      g.addColorStop(1, `rgba(${glowColor},0)`);
       ctx.fillStyle = g;
       ctx.beginPath();
       ctx.arc(node.x, node.y, glowR, 0, Math.PI * 2);
@@ -438,7 +448,7 @@ function drawMindMap(
     if (isKernel) {
       ctx.fillStyle = '#ffffff';
       ctx.fill();
-      ctx.fillStyle = '#0f0f0f';
+      ctx.fillStyle = kernelInner;
       ctx.font = `${radius * 0.9}px Inter, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -448,13 +458,13 @@ function drawMindMap(
       ctx.fill();
       if (isSelected || isHovered) {
         ctx.lineWidth = 2;
-        ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+        ctx.strokeStyle = `rgba(${glowColor},0.5)`;
         ctx.stroke();
       }
       // Search highlight ring
       if (isSearchHighlighted && !isSelected && !isHovered) {
         ctx.lineWidth = 2;
-        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+        ctx.strokeStyle = `rgba(${glowColor},0.3)`;
         ctx.stroke();
       }
     }
@@ -469,11 +479,11 @@ function drawMindMap(
     const labelY = node.y;
 
     const tw = ctx.measureText(node.name).width;
-    ctx.fillStyle = 'rgba(15, 15, 15, 0.85)';
+    ctx.fillStyle = labelBg;
     roundRect(ctx, labelX - 3, labelY - labelSize * 0.6, tw + 6, labelSize * 1.2, 3);
     ctx.fill();
 
-    ctx.fillStyle = isKernel || isSelected ? '#ffffff' : isHovered ? '#e0e0e0' : isSearchHighlighted ? '#ffffff' : node.familyColor;
+    ctx.fillStyle = isKernel || isSelected ? textColor : isHovered ? textColor : isSearchHighlighted ? textColor : node.familyColor;
     ctx.fillText(node.name, labelX, labelY);
   }
 

@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import type { GraphData } from '@shared/types';
 
 interface BrandProps {
@@ -43,8 +44,44 @@ const SHORTCUTS = [
   { keys: ['F'], label: 'Filter to selected family' },
   { keys: ['↑', '↓'], label: 'Walk ancestors / descendants' },
   { keys: ['Esc'], label: 'Close panel / clear filter' },
+  { keys: ['T'], label: 'Toggle theme' },
   { keys: ['?'], label: 'Toggle this list' },
 ];
+
+/* ===== Theme Toggle ===== */
+
+export function ThemeToggle({ theme, onToggle }: { theme: 'dark' | 'light'; onToggle: () => void }) {
+  const spinning = useRef(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
+
+  const handleToggle = () => {
+    if (spinning.current) return;
+    spinning.current = true;
+    onToggle();
+    const el = btnRef.current;
+    if (el) {
+      el.classList.add('theme-toggle--anim');
+      setTimeout(() => {
+        el.classList.remove('theme-toggle--anim');
+        spinning.current = false;
+      }, 500);
+    }
+  };
+
+  return (
+    <button
+      ref={btnRef}
+      className="theme-toggle"
+      onClick={handleToggle}
+      aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+      title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+    >
+      <span className="theme-toggle-icon">
+        {theme === 'dark' ? '☀' : '☾'}
+      </span>
+    </button>
+  );
+}
 
 export function KeyboardHints({ show, onToggle }: KeyboardHintsProps) {
   return (

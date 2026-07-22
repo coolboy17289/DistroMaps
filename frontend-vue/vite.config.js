@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url'
 
 // Resolve the src directory for absolute imports
 const SRC_ABS = fileURLToPath(new URL('./src', import.meta.url))
+// Shared types/handlers live one level up in the monorepo root.
+const SHARED_ABS = fileURLToPath(new URL('../shared', import.meta.url))
 
 function apiServerPlugin() {
   return {
@@ -53,6 +55,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': SRC_ABS,
+      '@shared': SHARED_ABS,
     },
   },
   server: {

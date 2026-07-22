@@ -3,9 +3,10 @@ import { Graph } from '@/components/Graph';
 import { SidePanel } from '@/components/SidePanel';
 import { SearchBar } from '@/components/SearchBar';
 import { Legend } from '@/components/Legend';
-import { Brand, KeyboardHints } from '@/components/Chrome';
+import { Brand, KeyboardHints, ThemeToggle } from '@/components/Chrome';
 import { AddDistroForm } from '@/components/AddDistroForm';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { LoadingSkeleton } from '@/components/LoadingSkeleton';
 import { useGraphData, useKeyboardShortcuts } from '@/hooks';
 import { filterDistros, parseSearch } from '@/lib/query';
 import type { Distro } from '@shared/types';
@@ -20,6 +21,12 @@ export function App() {
   const [hoveredFamilyId, setHoveredFamilyId] = useState<string | null>(null);
   const [kbdOpen, setKbdOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
+  const [legendOpen, setLegendOpen] = useState(true);
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const stored = localStorage.getItem('distromap-theme');
+    if (stored === 'light' || stored === 'dark') return stored;
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  });
   const [requestSearchFocus, setRequestSearchFocus] = useState(0);
 
   const selectedDistro = data?.distros.find((d) => d.id === selectedId) ?? null;
@@ -64,11 +71,6 @@ export function App() {
     return set;
   }, [data, selectedId]);
 
-  const visibleCount = useMemo(() => {
-    if (!data) return 0;
-    return data.distros.filter((d) => showDisco || d.status !== 'discontinued').length;
-  }, [data, showDisco]);
-
   const parsedQuery = useMemo(() => parseSearch(searchQuery), [searchQuery]);
   const filteredResults = useMemo(() => {
     if (!data) return [];
@@ -89,6 +91,16 @@ export function App() {
       .forEach((d) => set.add(d.id));
     return set;
   }, [searchHoveredId, data, searchQuery]);
+
+  // Sync theme to document
+  useEffect(() => {
+    document.documentElement.classList.toggle('light-theme', theme === 'light');
+    localStorage.setItem('distromap-theme', theme);
+  }, [theme]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
+  }, []);
 
   const focusSearch = useCallback(() => setRequestSearchFocus((x) => x + 1), []);
 
@@ -120,6 +132,7 @@ export function App() {
     },
     onArrowDown: walkDown,
     onArrowUp: walkUp,
+    onT: toggleTheme,
     onQuestion: () => setKbdOpen((v) => !v),
   });
 
@@ -167,7 +180,7 @@ export function App() {
 
   return (
     <ErrorBoundary>
-    <div className="app">
+    <div className={`app ${legendOpen ? 'legend-open' : 'legend-closed'}`}>
       <Brand data={data} />
 
       <div className="top-bar">          <SearchBar
@@ -184,6 +197,18 @@ export function App() {
         </button>
       </div>
 
+      <Legend
+        families={data.families}
+        distros={data.distros}
+        filterFamilyId={filterFamilyId}
+        setFilterFamilyId={setFilterFamilyId}
+        showDisco={showDisco}
+        setShowDisco={setShowDisco}
+        onHoverFamily={setHoveredFamilyId}
+        collapsed={!legendOpen}
+        onToggleCollapse={() => setLegendOpen((v) => !v)}
+      />
+
       <Graph
         data={data}
         selectedId={selectedId}
@@ -195,29 +220,17 @@ export function App() {
         onHover={setHoveredId}
       />
 
-      <div className="bottom-bar">
-        <Legend
-          families={data.families}
-          distros={data.distros}
-          filterFamilyId={filterFamilyId}
-          setFilterFamilyId={setFilterFamilyId}
-          showDisco={showDisco}
-          setShowDisco={setShowDisco}
-          onHoverFamily={setHoveredFamilyId}
-        />
-
-        <div className="bottom-bar-meta">
-          <span>
-            {hoveredId ? (
-              <>{data.distros.find((d) => d.id === hoveredId)?.name ?? hoveredId}</>
-            ) : (
-              <><strong>{visibleCount}</strong> distros · <strong>{data.meta.families - 1}</strong> families</>
-            )}
-          </span>
-        </div>
-      </div>
-
       <KeyboardHints show={kbdOpen} onToggle={() => setKbdOpen((v) => !v)} />
+
+      <ThemeToggle theme={theme} onToggle={toggleTheme} />
+
+      <div className="graph-status">
+        {hoveredId ? (
+          <>{data.distros.find((d) => d.id === hoveredId)?.name ?? hoveredId}</>
+        ) : (
+          <>{data.meta.totalDistros} distros · {data.meta.families - 1} families</>
+        )}
+      </div>
 
       {selectedDistro && (
         <SidePanel

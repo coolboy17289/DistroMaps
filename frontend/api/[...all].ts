@@ -11,11 +11,8 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   const routes = buildRoutes();
 
   for (const r of routes) {
-    if (r.method !== req.method) continue;
-    const m = r.pattern.exec(req.url ?? '');
-    if (!m) continue;
     await r.handle(req, res, {}, {});
-    return;
+    if (res.headersSent) return;
   }
 
   res.statusCode = 404;

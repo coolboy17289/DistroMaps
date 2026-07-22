@@ -34,6 +34,7 @@ export interface ShortcutHandlers {
   onArrowDown?: () => void;
   onArrowUp?: () => void;
   onQuestion?: () => void;
+  onT?: () => void;
   onLiveRegion?: (msg: string) => void;
 }
 
@@ -75,6 +76,11 @@ export function useKeyboardShortcuts(h: ShortcutHandlers) {
       }
       if (e.key === '?' && !isEditable) {
         handlers.current.onQuestion?.();
+        return;
+      }
+      if (e.key === 't' && !isEditable) {
+        e.preventDefault();
+        handlers.current.onT?.();
         return;
       }
     }
