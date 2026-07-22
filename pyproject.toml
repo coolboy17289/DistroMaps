@@ -1,0 +1,77 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "distromap-rl"
+version = "0.1.0"
+description = "Enterprise RL + 3D telemetry backend for DistroMap"
+requires-python = ">=3.10,<3.13"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+  { name = "DistroMap Engineering", email = "eng@distromap.example" },
+]
+keywords = ["reinforcement-learning", "verl", "3d", "telemetry", "grpo", "ppo"]
+dependencies = [
+  # Core framework
+  "torch>=2.1.0",
+  "numpy>=1.24.0",
+  "verl>=0.2.0",
+  "ray[default]>=2.9.0",
+  "omegaconf>=2.3.0",
+  "hydra-core>=1.3.0",
+  # Serving / telemetry
+  "fastapi>=0.109.0",
+  "uvicorn[standard]>=0.27.0",
+  "websockets>=12.0",
+  "python-socketio>=5.11.0",
+  "pydantic>=2.5.0",
+  "prometheus-client>=0.19.0",
+  # Headless 3D
+  "trimesh>=4.0.0",
+  "pyrender>=0.1.45",
+  "PyOpenGL>=3.1.7",
+  "PyOpenGL-accelerate>=3.1.7",
+  "Pillow>=10.0.0",
+  "scipy>=1.11.0",
+  # Utilities
+  "tqdm>=4.66.0",
+  "psutil>=5.9.0",
+  "httpx>=0.26.0",
+  "aiohttp>=3.9.0",
+  "tenacity>=8.2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.4.0",
+  "pytest-asyncio>=0.21.0",
+  "pytest-cov>=4.1.0",
+  "black>=23.0",
+  "ruff>=0.1.0",
+  "mypy>=1.7.0",
+]
+gpu = [
+  "flash-attn>=2.4.0",
+  "xformers>=0.0.23",
+]
+
+[project.scripts]
+distromap-rl-train = "rl.entrypoint:main"
+
+[tool.setuptools]
+packages = ["rl"]
+
+[tool.black]
+line-length = 120
+target-version = ["py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 120
+select = ["E", "F", "I", "W", "UP"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = false
+warn_unused_ignores = true

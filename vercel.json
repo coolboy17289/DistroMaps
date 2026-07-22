@@ -1,11 +1,17 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npm run build",
-  "outputDirectory": "frontend/dist",
-  "installCommand": "npm install",
+  "buildCommand": "npm run build:vue",
+  "outputDirectory": "frontend-vue/dist",
+  "installCommand": "npm install && npm --prefix frontend-vue install",
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "@vercel/node@5",
+      "includeFiles": "data.json"
+    }
+  },
   "rewrites": [
     {
-      "source": "/((?!api/|data\\.json|favicon\\.svg|assets/).*)",
+      "source": "/((?!api/|data\\.json|favicon\\.svg|icons\\.svg|assets/).*)",
       "destination": "/index.html"
     }
   ],

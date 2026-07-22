@@ -616,7 +616,6 @@ function scoreCandidate(
   patterns: LearnedPatterns,
   existingMatch: string | null,
 ): DiscoveryCandidate | null {
-  const nl = name.toLowerCase();
   const toks = tokenize(name);
   const descTokens = extractKeywords(description);
   const descFull = description.toLowerCase();
@@ -811,12 +810,6 @@ function scoreCandidate(
       bestFamilyScore = 10;
       break;
     }
-  }
-
-  // Get the family name
-  if (bestFamilyId) {
-    // We need to map family ID to name - we'll do this in the output phase
-    // For now, just keep the ID
   }
 
   // ---- Guess metadata ----

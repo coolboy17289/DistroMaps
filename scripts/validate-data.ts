@@ -67,7 +67,10 @@ for (const d of src.distros) {
 }
 
 const counts = {
-  families: src.families.length,
+  // build-data.ts injects a canonical `linux-kernel` family (+1) on top of the
+  // source families, so report the same count the build emits to avoid the
+  // confusing 88-vs-89 mismatch between `validate:data` and `build:data`.
+  families: src.families.length + 1,
   distros: src.distros.length,
   active: src.distros.filter((d) => d.status === 'active').length,
   discontinued: src.distros.filter((d) => d.status === 'discontinued').length,

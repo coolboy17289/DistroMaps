@@ -31,8 +31,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import BrainGraph from '@/components/BrainGraph.vue';
+import { ref, computed, onMounted, defineAsyncComponent, h } from 'vue';
+// BrainGraph pulls in Three.js (~640 KB). Load it as a separate async chunk so
+// the chrome / search / legend paint first and the 3D engine streams in
+// afterward, keeping the initial JS payload small and cacheable on its own.
+const BrainGraph = defineAsyncComponent({
+  loader: () => import('@/components/BrainGraph.vue'),
+  loadingComponent: () => h(
+    'div',
+    { style: 'position:absolute;inset:60px 0 0;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:13px;z-index:20;' },
+    'Loading the Linux knowledge graph…',
+  ),
+  delay: 0,
+});
 import SearchBar from '@/components/SearchBar.vue';
 import Legend from '@/components/Legend.vue';
 import SidePanel from '@/components/SidePanel.vue';

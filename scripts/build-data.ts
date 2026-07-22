@@ -16,6 +16,9 @@ const SRC = resolve(ROOT, 'data/distros.json');
 const OUT = resolve(ROOT, 'frontend/public/data.json');
 const API_OUT = resolve(ROOT, 'frontend/api/data.json');
 const VUE_OUT = resolve(ROOT, 'frontend-vue/public/data.json');
+// Root-level copy so the Vercel root `api/[...all].ts` serverless function can
+// read the dataset via `process.cwd()/data.json` (bundled via includeFiles).
+const ROOT_OUT = resolve(ROOT, 'data.json');
 
 type Source = SourceData;
 
@@ -119,6 +122,8 @@ function main() {
   // Copy to the Vue 3 frontend's public dir so it boots from its own /data.json.
   mkdirSync(dirname(VUE_OUT), { recursive: true });
   writeFileSync(VUE_OUT, JSON.stringify(graph));
+  // Root-level copy for the Vercel serverless function (see ROOT_OUT above).
+  writeFileSync(ROOT_OUT, JSON.stringify(graph));
   console.log(
     `✓ ${graph.distros.length} distros (${graph.meta.active} active, ${graph.meta.discontinued} discontinued) across ${graph.families.length} families → ${OUT}`,
   );

@@ -31,6 +31,9 @@ function loadDataset(): GraphData {
     resolve(process.cwd(), '../public/data.json'),
     resolve(process.cwd(), 'frontend/public/data.json'),
     resolve(process.cwd(), 'frontend/api/data.json'),
+    // Root-level copy written by build-data.ts; bundled with the Vercel root
+    // api/ function via vercel.json `functions.includeFiles`.
+    resolve(process.cwd(), 'data.json'),
   ];
   for (const candidate of candidates) {
     try {

@@ -7,4 +7,7 @@ dist
 data/cache
 frontend/public/data.json
 frontend/api/data.json
+frontend-vue/public/data.json
+frontend-vue/dist
+data.json
 .claude/

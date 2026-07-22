@@ -66,5 +66,9 @@ export default defineConfig({
   build: {
     target: 'es2022',
     sourcemap: true,
+    // The only chunk over the default 500 KB limit is the async-loaded
+    // BrainGraph chunk (Three.js). It is intentionally code-split out of the
+    // initial payload and fetched on demand, so the size warning is noise.
+    chunkSizeWarningLimit: 700,
   },
 })
